@@ -29,18 +29,27 @@ def predict(model_path: str, img_path: str):
 
 
 
-def train( dataset_dir: str, num_epochs: int, imgsz: int, model_path: str = "yolov8l-seg.pt", l2_lambda=0.0005):
+def train( dataset_dir: str, num_epochs: int, imgsz: int, type = "object-segmentation", l2_lambda=0.0005):
+    model_path = ""
+    if type == "object-segmentation":
+        model_path = "yolov8l-seg.pt"
+        if not os.path.isfile(model_path):
+            raise FileNotFoundError(f"Model file not found at {model_path}")
+    elif type == "object-detection":
+        model_path = "yolov8l.pt"
+        if not os.path.isfile(model_path):
+            raise FileNotFoundError(f"Model file not found at {model_path}")
 
-    if not os.path.isfile(model_path):
-        raise FileNotFoundError(f"Model file not found at {model_path}")
-
-    model = YOLO(model_path)  # load a pretrained model (recommended for training)
-    results = model.train(data=dataset_dir, epochs=num_epochs, imgsz=imgsz, patience=0, batch=16, weight_decay=l2_lambda)
-    print(results)
+    if model_path != "":
+        model = YOLO(model_path)  # load a pretrained model (recommended for training)
+        results = model.train(data=dataset_dir, epochs=num_epochs, imgsz=imgsz, patience=0, batch=16, weight_decay=l2_lambda)
+        print(results)
+    else:
+        print("ERRORE: tipo di training non specificato o non valido")
 
 if __name__ == '__main__':
-    #train("dataset/data.yaml", 100, 640)
-    img = predict("runs/segment/train2/weights/best.pt", "test.jpg")
-    cv2.imshow("img", img)
-    cv2.waitKey(0)
+    train("dataset/object-detection/CatsDogs_Detect/data.yaml", 100, 640, type ="object-detection")
+    #img = predict("runs/segment/train2/weights/best.pt", "test.jpg")
+    #cv2.imshow("img", img)
+    #cv2.waitKey(0)
 
