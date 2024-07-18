@@ -1,9 +1,8 @@
 task: detect
 mode: train
 model: yolov8l.pt
-data: dataset/object-detection/CatsDogs_Detect/data.yaml
+data: dataset/object-detection/cats_dogs/data.yaml
 epochs: 100
-time: null
 patience: 0
 batch: 16
 imgsz: 640
@@ -29,7 +28,6 @@ amp: true
 fraction: 1.0
 profile: false
 freeze: null
-multi_scale: false
 overlap_mask: true
 mask_ratio: 4
 dropout: 0.0
@@ -51,7 +49,6 @@ augment: false
 agnostic_nms: false
 classes: null
 retina_masks: false
-embed: null
 show: false
 save_frames: false
 save_txt: false
@@ -94,13 +91,9 @@ shear: 0.0
 perspective: 0.0
 flipud: 0.0
 fliplr: 0.5
-bgr: 0.0
 mosaic: 1.0
 mixup: 0.0
 copy_paste: 0.0
-auto_augment: randaugment
-erasing: 0.4
-crop_fraction: 1.0
 cfg: null
 tracker: botsort.yaml
 save_dir: runs\detect\train
