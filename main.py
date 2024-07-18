@@ -18,22 +18,44 @@ def predict(model_path: str, img_path: str,  type="object-segmentation"):
 
         # Run inference (prediction) on images
         results = model.predict(img_path)
+
+        keys = model.names
+        keys = keys.keys()
+        colors = dict()
+        for key in keys:
+            colors[key] = get_random_color()
+
+        print(colors)
+
         if len(results) > 0:
-            result = results[0].masks.data
-            for mask in result:
+            result = results[0]
+            for i, mask in enumerate(result.masks.data):
                 mask_app = mask.cpu().detach().numpy()
-                cv2.imshow('mask', mask_app)
-                cv2.waitKey()
                 gray_image = cv2.convertScaleAbs(mask_app)
 
-                # Apply a threshold to get a binary image (optional, depending on your use case)
+                cls = result.boxes.cls[i]
+                class_name = int(cls)
+                print(class_name)
+
+
+                #Apply a threshold to get a binary image (optional, depending on your use case)
                 _, binary_image = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY)
                 contours, _ = cv2.findContours(gray_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                # Draw contours on the image
 
-                cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
+                overlay = img.copy()
+                cv2.drawContours(overlay, contours, -1, colors[class_name], -1)  # Filled contour
+                cv2.addWeighted(overlay, 0.4, img, 0.6, 0, img)  # Blend overlay with the original image
+
+                cv2.drawContours(img, contours, -1, colors[class_name], 2)  # Contour outline
+
+
+                x, y, w, h = cv2.boundingRect(contours[0])
+
+                # Put class name on top
+                cv2.putText(img, (model.names[class_name]), (x, y-h), cv2.FONT_HERSHEY_SIMPLEX, 0.9, colors[class_name], 2)
 
         return img
+
     elif type == "object-detection":
         # Load trained segmentation model
         img = cv2.imread(img_path)
@@ -85,9 +107,9 @@ def train( dataset_dir: str, num_epochs: int, imgsz: int, type = "object-segment
         print("ERRORE: tipo di training non specificato o non valido")
 
 if __name__ == '__main__':
-    model_type = "object-detection"
+    model_type = "object-segmentation"
     #train("dataset/object-detection/cats_dogs/data.yaml", 100, 640, type=model_type)
-    img = predict("runs/detect/train/weights/best.pt", "img.png", type=model_type)
+    img = predict("runs/segment/train2/weights/best.pt", "test.jpg", type=model_type)
     cv2.imshow("img", img)
     cv2.waitKey(0)
 
